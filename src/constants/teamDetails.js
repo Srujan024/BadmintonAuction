@@ -32,7 +32,7 @@ export const TEAM_DETAILS = [
       {
         id: "p18",
         name: "Sonia",
-        tier: "B",
+        tier: "C",
         captain: false,
         bidAmount: 7400,
         img: "https://randomuser.me/api/portraits/women/6.jpg",
@@ -40,7 +40,7 @@ export const TEAM_DETAILS = [
       {
         id: "p19",
         name: "Vikram",
-        tier: "B",
+        tier: "C",
         captain: false,
         bidAmount: 7700,
         img: "https://randomuser.me/api/portraits/men/7.jpg",
@@ -405,7 +405,7 @@ export const TEAM_DETAILS = [
       {
         id: "p34",
         name: "Rajiv",
-        tier: "B",
+        tier: "C",
         captain: false,
         bidAmount: 7700,
         img: "https://randomuser.me/api/portraits/men/46.jpg",

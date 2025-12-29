@@ -75,7 +75,7 @@ export const TEAM_DETAILS = [
   {
     id: 1,
     name: "Net Ninjas",
-    color: "#059669",
+    color: "#4f46e5",
     players: [
       {
         id: "p3",
@@ -148,7 +148,7 @@ export const TEAM_DETAILS = [
   {
     id: 2,
     name: "Racket Rebels",
-    color: "#dc2626",
+    color: "#4f46e5",
     players: [
       {
         id: "p5",
@@ -221,7 +221,7 @@ export const TEAM_DETAILS = [
   {
     id: 3,
     name: "Court Kings",
-    color: "#f59e0b",
+    color: "#4f46e5",
     players: [
       {
         id: "p7",
@@ -294,7 +294,7 @@ export const TEAM_DETAILS = [
   {
     id: 4,
     name: "Smash Squad",
-    color: "#0ea5e9",
+    color: "#4f46e5",
     players: [
       {
         id: "p9",
@@ -367,7 +367,7 @@ export const TEAM_DETAILS = [
   {
     id: 5,
     name: "Drop Shot Devils",
-    color: "#9333ea",
+    color: "#4f46e5",
     players: [
       {
         id: "p11",
@@ -440,7 +440,7 @@ export const TEAM_DETAILS = [
   {
     id: 6,
     name: "Net Breakers",
-    color: "#16a34a",
+    color: "#4f46e5",
     players: [
       {
         id: "p13",
@@ -513,7 +513,7 @@ export const TEAM_DETAILS = [
   {
     id: 7,
     name: "Smash Storm",
-    color: "#2563eb",
+    color: "#4f46e5",
     players: [
       {
         id: "p15",

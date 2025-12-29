@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { TEAM_DETAILS } from "../constants/teamDetails";
-import { CAPTAIN_BID } from "../AuctionDashboard";
 import { useState } from "react";
 
 /* ---------- HELPERS ---------- */
@@ -61,7 +60,7 @@ export default function OverallStatsModal({ onClose }) {
 
   return (
     <AnimatePresence>
-      {/* Overlay */}
+      {/* BACKDROP (click outside closes) */}
       <motion.div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
         onClick={onClose}
@@ -70,7 +69,7 @@ export default function OverallStatsModal({ onClose }) {
         exit={{ opacity: 0 }}
       />
 
-      {/* Modal */}
+      {/* MODAL */}
       <motion.div
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
         initial={{ scale: 0.9, opacity: 0 }}
@@ -84,16 +83,26 @@ export default function OverallStatsModal({ onClose }) {
             w-full max-w-2xl
             max-h-[85vh]
             flex flex-col
+            relative
           "
         >
+          {/* ❌ CLOSE ICON */}
+          <button
+            onClick={onClose}
+            className="
+              absolute top-4 right-4
+              text-gray-400 hover:text-gray-700
+              text-xl font-bold
+            "
+          >
+            ✕
+          </button>
+
           {/* HEADER */}
           <div className="p-6 border-b">
             <h2 className="text-2xl font-bold text-center">
               📊 Tournament Insights
             </h2>
-            <p className="text-sm text-gray-500 text-center mt-1">
-              Top 10 Highest Bids
-            </p>
           </div>
 
           {/* METRICS */}
@@ -102,6 +111,11 @@ export default function OverallStatsModal({ onClose }) {
             <Metric label="⚡ Steals" value={totalSteals} />
             <Metric label="🔥 Hot Tier" value={`Tier ${hottestTier}`} />
           </div>
+          <div>
+            <p className="text-sm text-gray-500 text-center mt-1">
+              Top 10 Highest Bids
+            </p>
+          </div>
 
           {/* FILTER */}
           <div className="flex justify-center gap-3 px-6 py-4">
@@ -109,10 +123,10 @@ export default function OverallStatsModal({ onClose }) {
               <button
                 key={t}
                 onClick={() => setTierFilter(t)}
-                className={`px-4 py-1 rounded-full text-sm ${
+                className={`px-4 py-1 rounded-full text-sm transition ${
                   tierFilter === t
                     ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-600"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {t === "ALL" ? "All Tiers" : `Tier ${t}`}
@@ -120,7 +134,7 @@ export default function OverallStatsModal({ onClose }) {
             ))}
           </div>
 
-          {/* SCROLL LIST */}
+          {/* SCROLLABLE LIST */}
           <div className="overflow-y-auto px-6 pb-6 space-y-4">
             {top10.map((p, idx) => {
               const medal =
@@ -156,16 +170,6 @@ export default function OverallStatsModal({ onClose }) {
                 </motion.div>
               );
             })}
-          </div>
-
-          {/* FOOTER */}
-          <div className="p-4 border-t">
-            <button
-              onClick={onClose}
-              className="w-full py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-            >
-              Close
-            </button>
           </div>
         </div>
       </motion.div>

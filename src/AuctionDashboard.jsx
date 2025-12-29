@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TEAM_DETAILS } from "./constants/teamDetails";
 import TeamCard from "./TeamCard";
 import OverallStatsModal from "./components/OverallStatsModal";
@@ -39,6 +40,7 @@ function getTotalSpend(team) {
 
 export default function AuctionDashboard() {
   const [showOverallStats, setShowOverallStats] = useState(false);
+  const navigate = useNavigate(); // ✅ CORRECT placement
 
   const teams = TEAM_DETAILS.map((team) => {
     const normalized = normalizeTeam(team);
@@ -59,18 +61,16 @@ export default function AuctionDashboard() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="p-6 max-w-7xl mx-auto"
       >
-        {/* 🔒 KEEP EXISTING TITLE DESIGN */}
+        {/* TITLE */}
         <div className="text-center mb-6">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
             Racquet Rumble Badminton Tournament 2026
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            · Auction Dashboard ·
-          </p>
+          <p className="mt-2 text-sm text-gray-500">· Auction Dashboard ·</p>
         </div>
 
-        {/* ✅ Tournament Insights Button */}
-        <div className="flex justify-center mb-10">
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col items-center gap-4 mb-10">
           <button
             onClick={() => setShowOverallStats(true)}
             className="
@@ -82,9 +82,21 @@ export default function AuctionDashboard() {
           >
             📈 Tournament Insights
           </button>
+
+          <button
+            onClick={() => navigate("/matches")}
+            className="
+              px-6 py-2 rounded-full
+              bg-indigo-100 text-indigo-700
+              hover:bg-indigo-200
+              transition
+            "
+          >
+            📋 Match Summary
+          </button>
         </div>
 
-        {/* 🔒 KEEP EXISTING CARD GRID DESIGN */}
+        {/* TEAM GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
           {teams.map((team, index) => (
             <TeamCard
@@ -97,7 +109,7 @@ export default function AuctionDashboard() {
         </div>
       </motion.div>
 
-      {/* ✅ Overall Stats Modal */}
+      {/* MODAL */}
       {showOverallStats && (
         <OverallStatsModal onClose={() => setShowOverallStats(false)} />
       )}

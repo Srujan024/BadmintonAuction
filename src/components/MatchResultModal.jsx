@@ -10,108 +10,83 @@ const CATEGORIES = [
 ];
 
 export default function MatchResultModal({ match, onClose }) {
-  if (!match) return null;
-
-  const [teamA, teamB] = match.teams;
+  const [A, B] = match.teams;
 
   return (
     <AnimatePresence>
-      {/* Overlay */}
       <motion.div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
       />
-
-      {/* Modal */}
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center px-2"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-      >
+      <motion.div className="fixed inset-0 z-50 flex justify-center items-center px-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-4 text-xs"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[92vh] p-12 overflow-y-auto"
         >
-          {/* Header */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-base font-bold">
-              {teamA} <span className="text-indigo-600">vs</span> {teamB}
+          <div className="flex justify-between mb-6">
+            <h2 className="font-bold text-xl">
+              {A} <span className="text-indigo-600">vs</span> {B}
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-black text-lg"
-            >
-              ✕
-            </button>
+            <button onClick={onClose}>✕</button>
           </div>
 
-          {/* Table */}
-          <table className="w-full text-xs border rounded-lg overflow-hidden">
+          <table className="w-full text-sm border">
             <thead className="bg-gray-100">
               <tr>
-                <th className="text-left px-4 py-2">Category</th>
-                <th className="text-center px-4 py-2">{teamA} Player(s)</th>
-                <th className="text-center px-4 py-2">{teamA} Points</th>
-                <th className="text-center px-4 py-2">{teamB} Player(s)</th>
-                <th className="text-center px-4 py-2">{teamB} Points</th>
-                <th className="text-center px-4 py-2">Winner</th>
+                <th>Category</th>
+                <th>Matchup</th>
+                <th>{A}</th>
+                <th>{B}</th>
+                <th>Winner</th>
               </tr>
             </thead>
-
             <tbody>
               {CATEGORIES.map(({ key, label }) => {
-                const res = match.results[key] || {};
-                const a = res.A;
-                const b = res.B;
-                const playerA = res.playerA ?? "TBD";
-                const playerB = res.playerB ?? "TBD";
-                const pointsA = res.pointsA ?? a ?? "TBD";
-                const pointsB = res.pointsB ?? b ?? "TBD";
+                const r = match.results[key] || {};
+                const {
+                  playersA = "TBD",
+                  playersB = "TBD",
+                  pointsA = "—",
+                  pointsB = "—",
+                } = r;
 
-                let winner = "—";
-                if (
-                  pointsA !== null &&
-                  pointsB !== null &&
-                  pointsA !== "TBD" &&
-                  pointsB !== "TBD"
-                ) {
-                  winner =
-                    pointsA > pointsB
-                      ? teamA
-                      : pointsA < pointsB
-                      ? teamB
-                      : "Draw";
-                }
+                const aWin =
+                  typeof pointsA === "number" &&
+                  typeof pointsB === "number" &&
+                  pointsA > pointsB;
+                const bWin =
+                  typeof pointsA === "number" &&
+                  typeof pointsB === "number" &&
+                  pointsB > pointsA;
 
                 return (
                   <tr key={key} className="border-t">
-                    <td className="px-4 py-3 font-medium">{label}</td>
-                    <td className="text-center">{playerA}</td>
-                    <td className="text-center">{pointsA}</td>
-                    <td className="text-center">{playerB}</td>
-                    <td className="text-center">{pointsB}</td>
+                    <td>{label}</td>
+                    <td className="italic text-center">
+                      ({playersA}) vs ({playersB})
+                    </td>
+                    <td
+                      className={`text-center ${
+                        aWin ? "bg-green-100 font-bold" : ""
+                      }`}
+                    >
+                      {pointsA}
+                    </td>
+                    <td
+                      className={`text-center ${
+                        bWin ? "bg-green-100 font-bold" : ""
+                      }`}
+                    >
+                      {pointsB}
+                    </td>
                     <td className="text-center font-semibold text-indigo-600">
-                      {winner}
+                      {aWin ? A : bWin ? B : "—"}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-
-          {/* Footer */}
-          <div className="mt-4 text-right">
-            <button
-              onClick={onClose}
-              className="px-4 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xs"
-            >
-              Close
-            </button>
-          </div>
         </div>
       </motion.div>
     </AnimatePresence>

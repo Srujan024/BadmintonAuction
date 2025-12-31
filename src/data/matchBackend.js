@@ -3,13 +3,12 @@ export const MATCH_DATA = {
     A: {
       name: "Pool A",
       teams: [
-        { name: "Mighty Spartans", wins: 3, losses: 0 },
+        { name: "Mighty Spartans", wins: 2, losses: 1 },
         { name: "Racket Blitz", wins: 2, losses: 1 },
-        { name: "Rising Phoenix", wins: 1, losses: 2 },
+        { name: "Rising Phoenix", wins: 2, losses: 1 },
         { name: "SmashOps", wins: 0, losses: 3 },
       ],
     },
-
     B: {
       name: "Pool B",
       teams: [
@@ -22,6 +21,7 @@ export const MATCH_DATA = {
   },
 
   matches: {
+    /* ========================= POOL A ========================= */
     A: [
       {
         teams: ["Mighty Spartans", "Rising Phoenix"],
@@ -59,164 +59,6 @@ export const MATCH_DATA = {
           RMD: {
             playersA: "Arjun & Aman",
             playersB: "Kiran & Rahul",
-            pointsA: 21,
-            pointsB: 14,
-          },
-        },
-      },
-
-      {
-        teams: ["Mighty Spartans", "Racket Blitz"],
-        results: {
-          MS: {
-            playersA: "Arjun",
-            playersB: "Vishal",
-            pointsA: 21,
-            pointsB: 19,
-          },
-          WS: { playersA: "Neha", playersB: "Pooja", pointsA: 18, pointsB: 21 },
-          MD: {
-            playersA: "Rohit & Aman",
-            playersB: "Vishal & Nikhil",
-            pointsA: 21,
-            pointsB: 17,
-          },
-          XD: {
-            playersA: "Neha & Arjun",
-            playersB: "Pooja & Vishal",
-            pointsA: 21,
-            pointsB: 19,
-          },
-          RMS: {
-            playersA: "Aman",
-            playersB: "Nikhil",
-            pointsA: 21,
-            pointsB: 18,
-          },
-          RMD: {
-            playersA: "Rohit & Arjun",
-            playersB: "Vishal & Aman",
-            pointsA: 21,
-            pointsB: 20,
-          },
-        },
-      },
-
-      {
-        teams: ["Mighty Spartans", "SmashOps"],
-        results: {
-          MS: {
-            playersA: "Arjun",
-            playersB: "Rahul",
-            pointsA: 21,
-            pointsB: 11,
-          },
-          WS: { playersA: "Neha", playersB: "Sneha", pointsA: 21, pointsB: 13 },
-          MD: {
-            playersA: "Aman & Rohit",
-            playersB: "Rahul & Akash",
-            pointsA: 21,
-            pointsB: 14,
-          },
-          XD: {
-            playersA: "Neha & Aman",
-            playersB: "Sneha & Rahul",
-            pointsA: 21,
-            pointsB: 15,
-          },
-          RMS: {
-            playersA: "Rohit",
-            playersB: "Akash",
-            pointsA: 21,
-            pointsB: 12,
-          },
-          RMD: {
-            playersA: "Arjun & Aman",
-            playersB: "Rahul & Akash",
-            pointsA: 21,
-            pointsB: 13,
-          },
-        },
-      },
-
-      {
-        teams: ["Racket Blitz", "Rising Phoenix"],
-        results: {
-          MS: {
-            playersA: "Vishal",
-            playersB: "Kiran",
-            pointsA: 21,
-            pointsB: 18,
-          },
-          WS: {
-            playersA: "Pooja",
-            playersB: "Ananya",
-            pointsA: 21,
-            pointsB: 16,
-          },
-          MD: {
-            playersA: "Vishal & Nikhil",
-            playersB: "Kiran & Sandeep",
-            pointsA: 19,
-            pointsB: 21,
-          },
-          XD: {
-            playersA: "Pooja & Vishal",
-            playersB: "Ananya & Kiran",
-            pointsA: 21,
-            pointsB: 19,
-          },
-          RMS: {
-            playersA: "Nikhil",
-            playersB: "Sandeep",
-            pointsA: 21,
-            pointsB: 18,
-          },
-          RMD: {
-            playersA: "Vishal & Aman",
-            playersB: "Kiran & Rahul",
-            pointsA: 21,
-            pointsB: 20,
-          },
-        },
-      },
-
-      {
-        teams: ["Racket Blitz", "SmashOps"],
-        results: {
-          MS: {
-            playersA: "Vishal",
-            playersB: "Rahul",
-            pointsA: 21,
-            pointsB: 12,
-          },
-          WS: {
-            playersA: "Pooja",
-            playersB: "Sneha",
-            pointsA: 21,
-            pointsB: 14,
-          },
-          MD: {
-            playersA: "Nikhil & Aman",
-            playersB: "Rahul & Akash",
-            pointsA: 21,
-            pointsB: 15,
-          },
-          XD: {
-            playersA: "Pooja & Vishal",
-            playersB: "Sneha & Rahul",
-            pointsA: 21,
-            pointsB: 16,
-          },
-          RMS: {
-            playersA: "Aman",
-            playersB: "Akash",
-            pointsA: 21,
-            pointsB: 13,
-          },
-          RMD: {
-            playersA: "Vishal & Nikhil",
-            playersB: "Rahul & Akash",
             pointsA: 21,
             pointsB: 14,
           },
@@ -264,8 +106,173 @@ export const MATCH_DATA = {
           },
         },
       },
+
+      {
+        teams: ["Racket Blitz", "SmashOps"],
+        results: {
+          MS: {
+            playersA: "Vishal",
+            playersB: "Rahul",
+            pointsA: 21,
+            pointsB: 12,
+          },
+          WS: {
+            playersA: "Pooja",
+            playersB: "Sneha",
+            pointsA: 21,
+            pointsB: 14,
+          },
+          MD: {
+            playersA: "Vishal & Nikhil",
+            playersB: "Rahul & Akash",
+            pointsA: 21,
+            pointsB: 15,
+          },
+          XD: {
+            playersA: "Pooja & Vishal",
+            playersB: "Sneha & Rahul",
+            pointsA: 21,
+            pointsB: 16,
+          },
+          RMS: {
+            playersA: "Aman",
+            playersB: "Akash",
+            pointsA: 21,
+            pointsB: 13,
+          },
+          RMD: {
+            playersA: "Vishal & Nikhil",
+            playersB: "Rahul & Akash",
+            pointsA: 21,
+            pointsB: 14,
+          },
+        },
+      },
+
+      {
+        teams: ["Racket Blitz", "Rising Phoenix"],
+        results: {
+          MS: {
+            playersA: "Vishal",
+            playersB: "Kiran",
+            pointsA: 21,
+            pointsB: 18,
+          },
+          WS: {
+            playersA: "Pooja",
+            playersB: "Ananya",
+            pointsA: 18,
+            pointsB: 21,
+          },
+          MD: {
+            playersA: "Vishal & Nikhil",
+            playersB: "Kiran & Sandeep",
+            pointsA: 21,
+            pointsB: 19,
+          },
+          XD: {
+            playersA: "Pooja & Vishal",
+            playersB: "Ananya & Kiran",
+            pointsA: 18,
+            pointsB: 21,
+          },
+          RMS: {
+            playersA: "Nikhil",
+            playersB: "Sandeep",
+            pointsA: 21,
+            pointsB: 18,
+          },
+          RMD: {
+            playersA: "Vishal & Aman",
+            playersB: "Kiran & Rahul",
+            pointsA: 19,
+            pointsB: 21,
+          },
+          TB: {
+            playersA: "Vishal",
+            playersB: "Kiran",
+            pointsA: 21,
+            pointsB: 11,
+          },
+        },
+      },
+
+      {
+        teams: ["Mighty Spartans", "Racket Blitz"],
+        results: {
+          MS: {
+            playersA: "Arjun",
+            playersB: "Vishal",
+            pointsA: 21,
+            pointsB: 19,
+          },
+          WS: { playersA: "Neha", playersB: "Pooja", pointsA: 18, pointsB: 21 },
+          MD: {
+            playersA: "Rohit & Aman",
+            playersB: "Vishal & Nikhil",
+            pointsA: 21,
+            pointsB: 17,
+          },
+          XD: {
+            playersA: "Neha & Arjun",
+            playersB: "Pooja & Vishal",
+            pointsA: 19,
+            pointsB: 21,
+          },
+          RMS: {
+            playersA: "Aman",
+            playersB: "Nikhil",
+            pointsA: 18,
+            pointsB: 21,
+          },
+          RMD: {
+            playersA: "Rohit & Arjun",
+            playersB: "Vishal & Aman",
+            pointsA: 20,
+            pointsB: 21,
+          },
+        },
+      },
+
+      {
+        teams: ["Mighty Spartans", "SmashOps"],
+        results: {
+          MS: {
+            playersA: "Arjun",
+            playersB: "Rahul",
+            pointsA: 21,
+            pointsB: 11,
+          },
+          WS: { playersA: "Neha", playersB: "Sneha", pointsA: 21, pointsB: 13 },
+          MD: {
+            playersA: "Aman & Rohit",
+            playersB: "Rahul & Akash",
+            pointsA: 21,
+            pointsB: 14,
+          },
+          XD: {
+            playersA: "Neha & Aman",
+            playersB: "Sneha & Rahul",
+            pointsA: 21,
+            pointsB: 15,
+          },
+          RMS: {
+            playersA: "Rohit",
+            playersB: "Akash",
+            pointsA: 21,
+            pointsB: 12,
+          },
+          RMD: {
+            playersA: "Arjun & Aman",
+            playersB: "Rahul & Akash",
+            pointsA: 21,
+            pointsB: 13,
+          },
+        },
+      },
     ],
 
+    /* ========================= POOL B ========================= */
     B: [
       {
         teams: ["Hurricanes", "Lord of the Strings"],
@@ -516,9 +523,12 @@ export const MATCH_DATA = {
     ],
   },
 
-  /* ================= KNOCKOUTS ================= */
   knockouts: {
+    /* ========================= SEMIFINALS ========================= */
     semifinals: [
+      /* Semi Final 1
+       Mighty Spartans def Lord of the Strings (6–0)
+    */
       {
         teams: ["Mighty Spartans", "Lord of the Strings"],
         results: {
@@ -551,6 +561,9 @@ export const MATCH_DATA = {
         },
       },
 
+      /* Semi Final 2
+       Hurricanes def Racket Blitz (6–0)
+    */
       {
         teams: ["Racket Blitz", "Hurricanes"],
         results: {
@@ -594,8 +607,11 @@ export const MATCH_DATA = {
       },
     ],
 
-    /* ================= FINALS ================= */
+    /* ========================= FINALS ========================= */
     finals: [
+      /* FINAL
+       Mighty Spartans def Hurricanes (6–0)
+    */
       {
         teams: ["Mighty Spartans", "Hurricanes"],
         results: {

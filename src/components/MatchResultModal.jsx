@@ -55,7 +55,7 @@ export default function MatchResultModal({ match, onClose }) {
           <table className="w-full text-sm border">
             <thead className="bg-gray-100">
               <tr>
-                <th>Category</th>
+                <th className="text-left">Category</th>
                 <th>Matchup</th>
                 <th>{A}</th>
                 <th>{B}</th>

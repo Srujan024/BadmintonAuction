@@ -4,8 +4,8 @@ export const MATCH_DATA = {
       name: "Pool A",
       teams: [
         { name: "Mighty Spartans", wins: 2, losses: 1 },
-        { name: "Racket Blitz", wins: 2, losses: 1 },
         { name: "Rising Phoenix", wins: 2, losses: 1 },
+        { name: "Racket Blitz", wins: 2, losses: 1 },
         { name: "SmashOps", wins: 0, losses: 3 },
       ],
     },
@@ -545,19 +545,7 @@ export const MATCH_DATA = {
             playersB: "Kavya & Ravi",
             pointsA: 21,
             pointsB: 18,
-          },
-          RMS: {
-            playersA: "Rohit",
-            playersB: "Deepak",
-            pointsA: 21,
-            pointsB: 17,
-          },
-          RMD: {
-            playersA: "Aman & Rohit",
-            playersB: "Ravi & Aman",
-            pointsA: 21,
-            pointsB: 19,
-          },
+          }
         },
       },
 
@@ -631,14 +619,14 @@ export const MATCH_DATA = {
           XD: {
             playersA: "Neha & Arjun",
             playersB: "Megha & Siddharth",
-            pointsA: 21,
-            pointsB: 19,
+            pointsA: 20,
+            pointsB: 21,
           },
           RMS: {
             playersA: "Rohit",
             playersB: "Varun",
-            pointsA: 21,
-            pointsB: 18,
+            pointsA: 18,
+            pointsB: 21,
           },
           RMD: {
             playersA: "Aman & Rohit",

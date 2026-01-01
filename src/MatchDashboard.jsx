@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import Confetti from "react-confetti";
 import { MATCH_DATA } from "./data/matchBackend";
 import MatchResultModal from "./components/MatchResultModal";
+import KnockoutMatchCard from "./components/KnockoutMatchCard";
 import { calculatePoolStandings } from "./utils/poolStandings";
+import { getMatchOutcome } from "./utils/matchWinner";
 
 /* ---------- HELPERS ---------- */
 
@@ -12,26 +14,26 @@ function hasAnyResult(match) {
   );
 }
 
-function getFinalOutcome(match) {
-  if (!match) return null;
+// FINAL-SAFE: Strict final-only resolver
+function getFinalDecision(match) {
+  if (!match) return { status: "IN_PROGRESS" };
 
-  const [A, B] = match.teams;
-  let wA = 0,
-    wB = 0;
+  const outcome = getMatchOutcome(match);
 
-  Object.values(match.results || {}).forEach((r) => {
-    if (typeof r?.pointsA === "number" && typeof r?.pointsB === "number") {
-      if (r.pointsA > r.pointsB) wA++;
-      if (r.pointsB > r.pointsA) wB++;
-    }
-  });
+  if (!outcome || !outcome.winner) {
+    return { status: "IN_PROGRESS" };
+  }
 
-  if (wA === 0 && wB === 0) return null;
+  if (outcome.reason === "DNP" || outcome.reason === "Incomplete") {
+    return { status: "IN_PROGRESS" };
+  }
 
   return {
-    winner: wA > wB ? A : B,
-    runnerUp: wA > wB ? B : A,
-    score: `${wA} - ${wB}`,
+    status: "DECIDED",
+    winner: outcome.winner,
+    runnerUp:
+      outcome.winner === match.teams[0] ? match.teams[1] : match.teams[0],
+    reason: outcome.reason,
   };
 }
 
@@ -54,11 +56,11 @@ export default function MatchDashboard() {
   useEffect(() => setStored("poolB", openB), [openB]);
 
   const finalMatch = MATCH_DATA.knockouts.finals[0];
-  const finalOutcome = getFinalOutcome(finalMatch);
+  const finalDecision = getFinalDecision(finalMatch);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b px-8 py-4 font-bold">
+      <div className="bg-indigo-50 border-b px-8 py-4 font-bold flex justify-center">
         Racquet Rumble Badminton Tournament
       </div>
 
@@ -94,13 +96,13 @@ export default function MatchDashboard() {
 
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
-                      <tr>
-                        <th className="text-left">Team</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>Pts</th>
-                        <th>Events</th>
-                        <th>Points</th>
+                      <tr className="space-x-4">
+                        <th className="text-left px-2">Team</th>
+                        <th className="px-2">W</th>
+                        <th className="px-2">L</th>
+                        <th className="px-2">Pts</th>
+                        <th className="px-2">Events</th>
+                        <th className="px-2">Points</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -172,33 +174,26 @@ export default function MatchDashboard() {
 
         {/* ---------- KNOCKOUTS ---------- */}
         {tab === "Knockouts" && (
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="font-semibold mb-4">Semi Finals</h2>
-            {MATCH_DATA.knockouts.semifinals.map((m, i) => (
-              <div key={i} className="flex justify-between border p-3 mb-2">
-                <span>
-                  {m.teams[0]} vs {m.teams[1]}
-                </span>
-                <button
-                  disabled={!hasAnyResult(m)}
-                  onClick={() => setSelectedMatch(m)}
-                  className={`px-4 py-1 rounded ${
-                    hasAnyResult(m)
-                      ? "bg-gray-600 text-white"
-                      : "bg-gray-200 text-gray-400"
-                  }`}
-                >
-                  View
-                </button>
-              </div>
-            ))}
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold mb-2 text-center">
+              Semi Finals
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {MATCH_DATA.knockouts.semifinals.map((m, i) => (
+                <KnockoutMatchCard
+                  key={i}
+                  match={m}
+                  onView={() => setSelectedMatch(m)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
         {/* ---------- FINALS (NEW DESIGN) ---------- */}
         {tab === "Finals" && (
           <div className="space-y-8">
-            {finalOutcome && (
+            {finalDecision.status === "DECIDED" ? (
               <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 overflow-hidden">
                 <Confetti recycle={false} numberOfPieces={400} />
 
@@ -207,24 +202,41 @@ export default function MatchDashboard() {
                     Tournament Champion
                   </p>
                   <h1 className="text-4xl font-extrabold mt-2">
-                    🏆 {finalOutcome.winner}
+                    🏆 {finalDecision.winner}
                   </h1>
-                  <p className="mt-2">Final Score: {finalOutcome.score}</p>
+                  <p className="mt-2 text-sm opacity-90">
+                    Decided by {finalDecision.reason}
+                  </p>
 
                   <div className="mt-6 flex justify-center gap-6">
                     <div className="bg-white/20 px-6 py-4 rounded-xl">
                       <p className="text-xs uppercase">Champion</p>
-                      <p className="font-bold">{finalOutcome.winner}</p>
+                      <p className="font-bold">{finalDecision.winner}</p>
                     </div>
                     <div className="bg-white/10 px-6 py-4 rounded-xl">
                       <p className="text-xs uppercase">Runner-up</p>
-                      <p>{finalOutcome.runnerUp}</p>
+                      <p>{finalDecision.runnerUp}</p>
                     </div>
                   </div>
                 </div>
               </div>
+            ) : (
+              /* 🔄 MATCH IN PROGRESS */
+              <div className="bg-gray-100 border border-dashed rounded-2xl p-10 text-center">
+                <p className="uppercase tracking-widest text-sm text-gray-500">
+                  Finals
+                </p>
+                <h2 className="text-2xl font-bold text-gray-700 mt-2">
+                  Match In Progress
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tournament Champion will be displayed once the final is
+                  decided
+                </p>
+              </div>
             )}
 
+            {/* Final match card stays same */}
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="font-semibold mb-4">Final – Match Details</h2>
               <div className="flex justify-between border p-4 rounded">

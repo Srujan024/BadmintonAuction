@@ -1,6 +1,11 @@
 import { getMatchOutcome } from "./matchWinner";
 
 export function calculatePoolStandings(pool, matches) {
+  // Step 0: Check if league stage is fully completed
+  const allTeamsCompletedLeague = pool.teams.every(
+    (t) => t.wins + t.losses === 3
+  );
+
   // Step 1: Base table
   const table = pool.teams.map((t) => ({
     name: t.name,
@@ -10,16 +15,18 @@ export function calculatePoolStandings(pool, matches) {
     gamesWon: 0, // events won (NO TB)
     pointsFor: 0, // total rally points (NO TB)
     qualified: false,
-    qualifiedViaTieBreaker: false, // 👈 NEW
+    qualifiedViaTieBreaker: false,
   }));
 
   // Step 2: Accumulate events & points
   matches.forEach((match) => {
+    if (!match?.teams || !match?.results) return;
+
     const [A, B] = match.teams;
     const teamA = table.find((t) => t.name === A);
     const teamB = table.find((t) => t.name === B);
 
-    Object.entries(match.results || {}).forEach(([key, r]) => {
+    Object.entries(match.results).forEach(([key, r]) => {
       if (key === "TB") return; // TB NEVER counts
 
       if (typeof r?.pointsA === "number" && typeof r?.pointsB === "number") {
@@ -40,17 +47,18 @@ export function calculatePoolStandings(pool, matches) {
       b.pointsFor - a.pointsFor
   );
 
-  // Step 4: Qualification logic (THIS IS THE FIX)
-  const second = sorted[1];
-  const third = sorted[2];
+  // Step 4: Apply qualification ONLY after league completion
+  if (allTeamsCompletedLeague) {
+    const second = sorted[1];
+    const third = sorted[2];
 
-  sorted.forEach((team, index) => {
-    if (index < 2) team.qualified = true;
-  });
+    sorted.forEach((team, index) => {
+      if (index < 2) team.qualified = true;
+    });
 
-  if (second && third) {
-    // If events were tied and points decided → TQ
     if (
+      second &&
+      third &&
       second.matchPoints === third.matchPoints &&
       second.gamesWon === third.gamesWon &&
       second.pointsFor !== third.pointsFor

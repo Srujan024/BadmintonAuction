@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Confetti from "react-confetti";
-import { MATCH_DATA } from "./data/matchBackend";
+import { MATCH_DATA } from "./data/match_data";
 import MatchResultModal from "./components/MatchResultModal";
 import KnockoutMatchCard from "./components/KnockoutMatchCard";
 import FixturesBracket from "./components/FixturesBracket";
@@ -10,22 +10,33 @@ import { getMatchOutcome } from "./utils/matchWinner";
 /* ---------- HELPERS ---------- */
 
 function hasAnyResult(match) {
-  return Object.values(match.results || {}).some(
+  if (!match || !match.results) return false;
+
+  return Object.values(match.results).some(
     (r) => typeof r?.pointsA === "number" && typeof r?.pointsB === "number"
   );
 }
 
-// ✅ FINAL-SAFE: single source of truth
+function isPoolLeagueComplete(pool) {
+  return pool.teams.every((t) => t.wins + t.losses === 3);
+}
+
+function isSemiDecided(match) {
+  if (!match) return false;
+  const outcome = getMatchOutcome(match);
+  return (
+    outcome?.winner &&
+    outcome.reason !== "DNP" &&
+    outcome.reason !== "Incomplete"
+  );
+}
+
 function getFinalDecision(match) {
   if (!match) return { status: "IN_PROGRESS" };
 
   const outcome = getMatchOutcome(match);
+  if (!outcome?.winner) return { status: "IN_PROGRESS" };
 
-  if (!outcome || !outcome.winner) {
-    return { status: "IN_PROGRESS" };
-  }
-
-  // ❗ ONLY invalid cases
   if (outcome.reason === "DNP" || outcome.reason === "Incomplete") {
     return { status: "IN_PROGRESS" };
   }
@@ -84,6 +95,18 @@ export default function MatchDashboard() {
 
   const finalDecision = getFinalDecision(finalMatch);
 
+  /* ---------- TOURNAMENT STATES ---------- */
+
+  const isPoolACompleted = isPoolLeagueComplete(MATCH_DATA.pools.A);
+  const isPoolBCompleted = isPoolLeagueComplete(MATCH_DATA.pools.B);
+  const isLeagueCompleted = isPoolACompleted && isPoolBCompleted;
+
+  const areSemisReady =
+    Array.isArray(semiMatches) &&
+    semiMatches.length === 2 &&
+    isSemiDecided(semiMatches[0]) &&
+    isSemiDecided(semiMatches[1]);
+
   /* ---------- RENDER ---------- */
 
   return (
@@ -92,25 +115,49 @@ export default function MatchDashboard() {
         Racquet Rumble Badminton Tournament
       </div>
 
-      {/* Tabs */}
+      {/* ---------- TABS ---------- */}
       <div className="flex justify-center mt-6 gap-2">
         {["Fixtures", "Pool Standings", "Matches", "Knockouts", "Finals"].map(
-          (t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-6 py-2 rounded-lg ${
-                tab === t ? "bg-white shadow font-semibold" : "bg-gray-100"
-              }`}
-            >
-              {t}
-            </button>
-          )
+          (t) => {
+            const disabled =
+              (t === "Fixtures" && !isLeagueCompleted) ||
+              (t === "Knockouts" && !isLeagueCompleted) ||
+              (t === "Finals" && !areSemisReady);
+
+            return (
+              <button
+                key={t}
+                disabled={disabled}
+                onClick={() => !disabled && setTab(t)}
+                className={`px-6 py-2 rounded-lg transition
+                  ${
+                    tab === t
+                      ? "bg-white shadow font-semibold"
+                      : "bg-gray-100"
+                  }
+                  ${
+                    disabled
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-gray-200"
+                  }
+                `}
+                title={
+                  disabled
+                    ? t === "Finals"
+                      ? "Complete both Semi Finals to unlock"
+                      : "Complete all Pool matches to unlock"
+                    : ""
+                }
+              >
+                {t}
+              </button>
+            );
+          }
         )}
       </div>
 
       {/* ---------- FIXTURES ---------- */}
-      {tab === "Fixtures" && (
+      {tab === "Fixtures" && isLeagueCompleted && (
         <FixturesBracket
           poolAStandings={poolAStandings}
           poolBStandings={poolBStandings}
@@ -217,7 +264,7 @@ export default function MatchDashboard() {
           ))}
 
         {/* ---------- KNOCKOUTS ---------- */}
-        {tab === "Knockouts" && (
+        {tab === "Knockouts" && isLeagueCompleted && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-center">Semi Finals</h2>
             <div className="grid md:grid-cols-2 gap-6">
@@ -233,7 +280,7 @@ export default function MatchDashboard() {
         )}
 
         {/* ---------- FINALS ---------- */}
-        {tab === "Finals" && (
+        {tab === "Finals" && areSemisReady && (
           <div className="space-y-8">
             {finalDecision.status === "DECIDED" ? (
               <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 overflow-hidden">
@@ -258,7 +305,7 @@ export default function MatchDashboard() {
               </div>
             )}
 
-            {/* ✅ FINAL VIEW BUTTON (FIX) */}
+            {/* ✅ FINAL VIEW MATCH RESULT — RESTORED */}
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="font-semibold mb-4">Final – Match Details</h2>
 
@@ -293,3 +340,4 @@ export default function MatchDashboard() {
     </div>
   );
 }
+  

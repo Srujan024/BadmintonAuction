@@ -101,7 +101,7 @@ export default function OverallStatsModal({ onClose }) {
           {/* HEADER */}
           <div className="p-6 border-b">
             <h2 className="text-2xl font-bold text-center">
-              📊 Tournament Insights
+              📊 Auction Insights
             </h2>
           </div>
 

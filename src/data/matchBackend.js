@@ -545,7 +545,7 @@ export const MATCH_DATA = {
             playersB: "Kavya & Ravi",
             pointsA: 21,
             pointsB: 18,
-          }
+          },
         },
       },
 

@@ -1,28 +1,41 @@
 import { useState, useEffect } from "react";
 import Confetti from "react-confetti";
-import { MATCH_DATA } from "./data/matchBackend";
+import { MATCH_DATA } from "./data/match_data";
 import MatchResultModal from "./components/MatchResultModal";
 import KnockoutMatchCard from "./components/KnockoutMatchCard";
+import FixturesBracket from "./components/FixturesBracket";
 import { calculatePoolStandings } from "./utils/poolStandings";
 import { getMatchOutcome } from "./utils/matchWinner";
 
 /* ---------- HELPERS ---------- */
 
 function hasAnyResult(match) {
-  return Object.values(match.results || {}).some(
+  if (!match || !match.results) return false;
+
+  return Object.values(match.results).some(
     (r) => typeof r?.pointsA === "number" && typeof r?.pointsB === "number"
   );
 }
 
-// FINAL-SAFE: Strict final-only resolver
+function isPoolLeagueComplete(pool) {
+  return pool.teams.every((t) => t.wins + t.losses === 3);
+}
+
+function isSemiDecided(match) {
+  if (!match) return false;
+  const outcome = getMatchOutcome(match);
+  return (
+    outcome?.winner &&
+    outcome.reason !== "DNP" &&
+    outcome.reason !== "Incomplete"
+  );
+}
+
 function getFinalDecision(match) {
   if (!match) return { status: "IN_PROGRESS" };
 
   const outcome = getMatchOutcome(match);
-
-  if (!outcome || !outcome.winner) {
-    return { status: "IN_PROGRESS" };
-  }
+  if (!outcome?.winner) return { status: "IN_PROGRESS" };
 
   if (outcome.reason === "DNP" || outcome.reason === "Incomplete") {
     return { status: "IN_PROGRESS" };
@@ -55,8 +68,46 @@ export default function MatchDashboard() {
   useEffect(() => setStored("poolA", openA), [openA]);
   useEffect(() => setStored("poolB", openB), [openB]);
 
+  const handleSelectPool = (pool) => {
+    setTab("Matches");
+    setOpenA(pool === "A");
+    setOpenB(pool === "B");
+  };
+
+  const handleFinalView = () => {
+    setTab("Finals");
+  };
+
+  /* ---------- DATA ---------- */
+
+  const poolAStandings = calculatePoolStandings(
+    MATCH_DATA.pools.A,
+    MATCH_DATA.matches.A
+  );
+
+  const poolBStandings = calculatePoolStandings(
+    MATCH_DATA.pools.B,
+    MATCH_DATA.matches.B
+  );
+
+  const semiMatches = MATCH_DATA.knockouts.semifinals;
   const finalMatch = MATCH_DATA.knockouts.finals[0];
+
   const finalDecision = getFinalDecision(finalMatch);
+
+  /* ---------- TOURNAMENT STATES ---------- */
+
+  const isPoolACompleted = isPoolLeagueComplete(MATCH_DATA.pools.A);
+  const isPoolBCompleted = isPoolLeagueComplete(MATCH_DATA.pools.B);
+  const isLeagueCompleted = isPoolACompleted && isPoolBCompleted;
+
+  const areSemisReady =
+    Array.isArray(semiMatches) &&
+    semiMatches.length === 2 &&
+    isSemiDecided(semiMatches[0]) &&
+    isSemiDecided(semiMatches[1]);
+
+  /* ---------- RENDER ---------- */
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,20 +115,60 @@ export default function MatchDashboard() {
         Racquet Rumble Badminton Tournament
       </div>
 
-      {/* Tabs */}
+      {/* ---------- TABS ---------- */}
       <div className="flex justify-center mt-6 gap-2">
-        {["Pool Standings", "Matches", "Knockouts", "Finals"].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-6 py-2 rounded-lg ${
-              tab === t ? "bg-white shadow font-semibold" : "bg-gray-100"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+        {["Fixtures", "Pool Standings", "Matches", "Knockouts", "Finals"].map(
+          (t) => {
+            const disabled =
+              (t === "Fixtures" && !isLeagueCompleted) ||
+              (t === "Knockouts" && !isLeagueCompleted) ||
+              (t === "Finals" && !areSemisReady);
+
+            return (
+              <button
+                key={t}
+                disabled={disabled}
+                onClick={() => !disabled && setTab(t)}
+                className={`px-6 py-2 rounded-lg transition
+                  ${
+                    tab === t
+                      ? "bg-white shadow font-semibold"
+                      : "bg-gray-100"
+                  }
+                  ${
+                    disabled
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-gray-200"
+                  }
+                `}
+                title={
+                  disabled
+                    ? t === "Finals"
+                      ? "Complete both Semi Finals to unlock"
+                      : "Complete all Pool matches to unlock"
+                    : ""
+                }
+              >
+                {t}
+              </button>
+            );
+          }
+        )}
       </div>
+
+      {/* ---------- FIXTURES ---------- */}
+      {tab === "Fixtures" && isLeagueCompleted && (
+        <FixturesBracket
+          poolAStandings={poolAStandings}
+          poolBStandings={poolBStandings}
+          semiMatches={semiMatches}
+          finalMatch={finalMatch}
+          finalDecision={finalDecision}
+          onViewMatch={setSelectedMatch}
+          onSelectPool={handleSelectPool}
+          onFinalView={handleFinalView}
+        />
+      )}
 
       <div className="max-w-6xl mx-auto p-8">
         {/* ---------- POOL STANDINGS ---------- */}
@@ -96,7 +187,7 @@ export default function MatchDashboard() {
 
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
-                      <tr className="space-x-4">
+                      <tr>
                         <th className="text-left px-2">Team</th>
                         <th className="px-2">W</th>
                         <th className="px-2">L</th>
@@ -165,7 +256,7 @@ export default function MatchDashboard() {
                           : "bg-gray-200 text-gray-400"
                       }`}
                     >
-                      View
+                      View Result
                     </button>
                   </div>
                 ))}
@@ -173,13 +264,11 @@ export default function MatchDashboard() {
           ))}
 
         {/* ---------- KNOCKOUTS ---------- */}
-        {tab === "Knockouts" && (
+        {tab === "Knockouts" && isLeagueCompleted && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold mb-2 text-center">
-              Semi Finals
-            </h2>
+            <h2 className="text-xl font-semibold text-center">Semi Finals</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              {MATCH_DATA.knockouts.semifinals.map((m, i) => (
+              {semiMatches.map((m, i) => (
                 <KnockoutMatchCard
                   key={i}
                   match={m}
@@ -190,13 +279,12 @@ export default function MatchDashboard() {
           </div>
         )}
 
-        {/* ---------- FINALS (NEW DESIGN) ---------- */}
-        {tab === "Finals" && (
+        {/* ---------- FINALS ---------- */}
+        {tab === "Finals" && areSemisReady && (
           <div className="space-y-8">
             {finalDecision.status === "DECIDED" ? (
               <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 overflow-hidden">
                 <Confetti recycle={false} numberOfPieces={400} />
-
                 <div className="relative z-10 text-center">
                   <p className="uppercase tracking-widest text-sm opacity-80">
                     Tournament Champion
@@ -207,42 +295,25 @@ export default function MatchDashboard() {
                   <p className="mt-2 text-sm opacity-90">
                     Decided by {finalDecision.reason}
                   </p>
-
-                  <div className="mt-6 flex justify-center gap-6">
-                    <div className="bg-white/20 px-6 py-4 rounded-xl">
-                      <p className="text-xs uppercase">Champion</p>
-                      <p className="font-bold">{finalDecision.winner}</p>
-                    </div>
-                    <div className="bg-white/10 px-6 py-4 rounded-xl">
-                      <p className="text-xs uppercase">Runner-up</p>
-                      <p>{finalDecision.runnerUp}</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             ) : (
-              /* 🔄 MATCH IN PROGRESS */
               <div className="bg-gray-100 border border-dashed rounded-2xl p-10 text-center">
-                <p className="uppercase tracking-widest text-sm text-gray-500">
-                  Finals
-                </p>
-                <h2 className="text-2xl font-bold text-gray-700 mt-2">
+                <h2 className="text-2xl font-bold text-gray-700">
                   Match In Progress
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Tournament Champion will be displayed once the final is
-                  decided
-                </p>
               </div>
             )}
 
-            {/* Final match card stays same */}
+            {/* ✅ FINAL VIEW MATCH RESULT — RESTORED */}
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="font-semibold mb-4">Final – Match Details</h2>
-              <div className="flex justify-between border p-4 rounded">
-                <span>
+
+              <div className="flex justify-between items-center border p-4 rounded">
+                <span className="font-medium">
                   {finalMatch.teams[0]} vs {finalMatch.teams[1]}
                 </span>
+
                 <button
                   disabled={!hasAnyResult(finalMatch)}
                   onClick={() => setSelectedMatch(finalMatch)}
@@ -252,7 +323,7 @@ export default function MatchDashboard() {
                       : "bg-gray-200 text-gray-400"
                   }`}
                 >
-                  View
+                  View Result
                 </button>
               </div>
             </div>
@@ -269,3 +340,4 @@ export default function MatchDashboard() {
     </div>
   );
 }
+  

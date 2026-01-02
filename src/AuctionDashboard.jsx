@@ -80,7 +80,7 @@ export default function AuctionDashboard() {
               transition
             "
           >
-            📈 Tournament Insights
+            📈 Auction Insights
           </button>
 
           <button

@@ -46,7 +46,7 @@ export default function MatchResultModal({ match, onClose }) {
               </>
             ) : (
               <div className="font-semibold text-gray-500">
-                Match Decision Pending (DNP)
+                Match Decision Pending
               </div>
             )}
           </div>

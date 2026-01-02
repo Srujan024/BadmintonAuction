@@ -4,14 +4,19 @@ import { getMatchOutcome } from "../utils/matchWinner";
    UI ATOMS
 ========================= */
 
-function Card({ title, subtitle, onClick, disabled, highlight, qualified }) {
+function Card({ title, subtitle, onClick, disabled, highlight }) {
   return (
     <div
       onClick={!disabled ? onClick : undefined}
-      className={`rounded-lg px-4 py-3 text-center text-sm shadow transition
-        ${disabled ? "bg-gray-100 text-gray-400" : "bg-white cursor-pointer"}
-        ${qualified ? "border-2 border-black" : "border"}
-        ${highlight ? "ring-2 ring-black font-semibold" : ""}
+      className={`
+        rounded-lg px-4 py-3 text-center text-sm shadow transition
+        border-2
+        ${
+          disabled
+            ? "bg-gray-100 text-gray-400 border-gray-300"
+            : "bg-white cursor-pointer border-black"
+        }
+        ${highlight ? "font-semibold" : ""}
       `}
     >
       <div className="text-[11px] opacity-70 mb-1">{title}</div>
@@ -54,6 +59,8 @@ export default function FixturesBracket({
   finalMatch,
   finalDecision,
   onViewMatch,
+  onSelectPool,
+  onFinalView,
 }) {
   const A1 = poolAStandings[0]?.name;
   const A2 = poolAStandings[1]?.name;
@@ -86,8 +93,8 @@ export default function FixturesBracket({
                 title={`Pool A – ${i + 1}`}
                 subtitle={t.name}
                 disabled={i > 1}
-                qualified={i <= 1}
                 highlight={isOnWinningPath(t.name)}
+                onClick={() => onSelectPool("A")}
               />
             ))}
           </div>
@@ -101,8 +108,8 @@ export default function FixturesBracket({
                 title={`Pool B – ${i + 1}`}
                 subtitle={t.name}
                 disabled={i > 1}
-                qualified={i <= 1}
                 highlight={isOnWinningPath(t.name)}
+                onClick={() => onSelectPool("B")}
               />
             ))}
           </div>
@@ -118,7 +125,7 @@ export default function FixturesBracket({
           <Card
             title="Semi Final 1"
             subtitle={`${A1 ?? "TBD"} vs ${B2 ?? "TBD"}`}
-            onClick={() => onViewMatch(semiMatches[0])}
+            onClick={() => onViewMatch(semiMatches?.[0])}
             disabled={!semiMatches?.[0]}
             highlight={!!semi1Winner}
           />
@@ -126,7 +133,7 @@ export default function FixturesBracket({
           <Card
             title="Semi Final 2"
             subtitle={`${B1 ?? "TBD"} vs ${A2 ?? "TBD"}`}
-            onClick={() => onViewMatch(semiMatches[1])}
+            onClick={() => onViewMatch(semiMatches?.[1])}
             disabled={!semiMatches?.[1]}
             highlight={!!semi2Winner}
           />
@@ -140,7 +147,9 @@ export default function FixturesBracket({
 
           <Card
             title="Final Match"
-            subtitle={`${finalMatch.teams[0]} vs ${finalMatch.teams[1]}`}
+            subtitle={`${finalMatch?.teams?.[0] ?? "TBD"} vs ${
+              finalMatch?.teams?.[1] ?? "TBD"
+            }`}
             onClick={() => onViewMatch(finalMatch)}
             disabled={!finalMatch}
             highlight={finalDecision.status === "DECIDED"}
@@ -153,7 +162,7 @@ export default function FixturesBracket({
         <Card
           title="Champion"
           subtitle={finalWinner ?? "Match In Progress"}
-          onClick={() => finalWinner && onViewMatch(finalMatch)}
+          onClick={() => finalWinner && onFinalView()}
           disabled={!finalWinner}
           highlight={!!finalWinner}
         />

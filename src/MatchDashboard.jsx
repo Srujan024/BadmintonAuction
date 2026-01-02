@@ -48,7 +48,7 @@ const setStored = (k, v) => sessionStorage.setItem(k, v);
 /* ---------- MAIN ---------- */
 
 export default function MatchDashboard() {
-  const [tab, setTab] = useState("Fixtures");
+  const [tab, setTab] = useState("Pool Standings");
   const [selectedMatch, setSelectedMatch] = useState(null);
 
   const [openA, setOpenA] = useState(() => getStored("poolA", true));
@@ -56,6 +56,16 @@ export default function MatchDashboard() {
 
   useEffect(() => setStored("poolA", openA), [openA]);
   useEffect(() => setStored("poolB", openB), [openB]);
+
+  const handleSelectPool = (pool) => {
+    setTab("Matches");
+    setOpenA(pool === "A");
+    setOpenB(pool === "B");
+  };
+
+  const handleFinalView = () => {
+    setTab("Finals");
+  };
 
   /* ---------- DATA ---------- */
 
@@ -108,6 +118,8 @@ export default function MatchDashboard() {
           finalMatch={finalMatch}
           finalDecision={finalDecision}
           onViewMatch={setSelectedMatch}
+          onSelectPool={handleSelectPool}
+          onFinalView={handleFinalView}
         />
       )}
 
@@ -197,7 +209,7 @@ export default function MatchDashboard() {
                           : "bg-gray-200 text-gray-400"
                       }`}
                     >
-                      View
+                      View Result
                     </button>
                   </div>
                 ))}

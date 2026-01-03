@@ -1,45 +1,63 @@
 import { getMatchOutcome } from "./matchWinner";
 
 export function calculatePoolStandings(pool, matches) {
-  // Step 0: Check if league stage is fully completed
+  /* ---------- STEP 0: league completion ---------- */
   const allTeamsCompletedLeague = pool.teams.every(
     (t) => t.wins + t.losses === 3
   );
 
-  // Step 1: Base table
+  /* ---------- STEP 1: base table ---------- */
   const table = pool.teams.map((t) => ({
     name: t.name,
     wins: t.wins,
     losses: t.losses,
-    matchPoints: t.wins, // +1 per match win
-    gamesWon: 0, // events won (NO TB)
-    pointsFor: 0, // total rally points (NO TB)
+    matchPoints: t.wins, // primary sort
+    gamesWon: 0, // EVENTS (from winning matches only)
+    pointsFor: 0, // POINTS (from winning matches only)
     qualified: false,
     qualifiedViaTieBreaker: false,
   }));
 
-  // Step 2: Accumulate events & points
+  /* ---------- STEP 2: accumulate EVENTS & POINTS ---------- */
   matches.forEach((match) => {
     if (!match?.teams || !match?.results) return;
+
+    const outcome = getMatchOutcome(match);
+    if (!outcome?.winner) return; // no decision yet
 
     const [A, B] = match.teams;
     const teamA = table.find((t) => t.name === A);
     const teamB = table.find((t) => t.name === B);
+    if (!teamA || !teamB) return;
+
+    let eventsA = 0;
+    let eventsB = 0;
+    let pointsA = 0;
+    let pointsB = 0;
 
     Object.entries(match.results).forEach(([key, r]) => {
-      if (key === "TB") return; // TB NEVER counts
+      if (key === "TB") return; // TB never counts
 
       if (typeof r?.pointsA === "number" && typeof r?.pointsB === "number") {
-        teamA.pointsFor += r.pointsA;
-        teamB.pointsFor += r.pointsB;
+        pointsA += r.pointsA;
+        pointsB += r.pointsB;
 
-        if (r.pointsA > r.pointsB) teamA.gamesWon++;
-        else if (r.pointsB > r.pointsA) teamB.gamesWon++;
+        if (r.pointsA > r.pointsB) eventsA++;
+        else if (r.pointsB > r.pointsA) eventsB++;
       }
     });
+
+    // ✅ Award ONLY to actual match winner
+    if (outcome.winner === A) {
+      teamA.gamesWon += eventsA;
+      teamA.pointsFor += pointsA;
+    } else if (outcome.winner === B) {
+      teamB.gamesWon += eventsB;
+      teamB.pointsFor += pointsB;
+    }
   });
 
-  // Step 3: Sort
+  /* ---------- STEP 3: sort ---------- */
   const sorted = [...table].sort(
     (a, b) =>
       b.matchPoints - a.matchPoints ||
@@ -47,15 +65,16 @@ export function calculatePoolStandings(pool, matches) {
       b.pointsFor - a.pointsFor
   );
 
-  // Step 4: Apply qualification ONLY after league completion
+  /* ---------- STEP 4: qualification (ONLY after league ends) ---------- */
   if (allTeamsCompletedLeague) {
     const second = sorted[1];
     const third = sorted[2];
 
-    sorted.forEach((team, index) => {
-      if (index < 2) team.qualified = true;
+    sorted.forEach((team, idx) => {
+      if (idx < 2) team.qualified = true;
     });
 
+    // TQ only when matches + events tied, points decide
     if (
       second &&
       third &&

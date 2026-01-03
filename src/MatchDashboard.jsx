@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Confetti from "react-confetti";
-import { MATCH_DATA } from "./data/match_data";
+import { MATCH_DATA } from "./data/matchBackend";
 import MatchResultModal from "./components/MatchResultModal";
 import KnockoutMatchCard from "./components/KnockoutMatchCard";
 import FixturesBracket from "./components/FixturesBracket";
@@ -49,6 +49,36 @@ function getFinalDecision(match) {
     reason: outcome.reason,
   };
 }
+
+function getMatchSummary(match) {
+  let eventsA = 0;
+  let eventsB = 0;
+  let pointsA = 0;
+  let pointsB = 0;
+  let tbA = null;
+  let tbB = null;
+
+  Object.entries(match.results || {}).forEach(([key, r]) => {
+    if (key === "TB") {
+      if (typeof r?.pointsA === "number" && typeof r?.pointsB === "number") {
+        tbA = r.pointsA;
+        tbB = r.pointsB;
+      }
+      return;
+    }
+
+    if (typeof r?.pointsA === "number" && typeof r?.pointsB === "number") {
+      pointsA += r.pointsA;
+      pointsB += r.pointsB;
+
+      if (r.pointsA > r.pointsB) eventsA++;
+      else if (r.pointsB > r.pointsA) eventsB++;
+    }
+  });
+
+  return { eventsA, eventsB, pointsA, pointsB, tbA, tbB };
+}
+
 
 /* ---------- SESSION ---------- */
 
@@ -130,11 +160,7 @@ export default function MatchDashboard() {
                 disabled={disabled}
                 onClick={() => !disabled && setTab(t)}
                 className={`px-6 py-2 rounded-lg transition
-                  ${
-                    tab === t
-                      ? "bg-white shadow font-semibold"
-                      : "bg-gray-100"
-                  }
+                  ${tab === t ? "bg-white shadow font-semibold" : "bg-gray-100"}
                   ${
                     disabled
                       ? "opacity-40 cursor-not-allowed"
@@ -238,28 +264,156 @@ export default function MatchDashboard() {
             <div key={k} className="bg-white rounded-xl shadow p-6 mb-8">
               <div className="flex justify-between mb-4">
                 <h2 className="font-semibold">Pool {k} Matches</h2>
-                <button onClick={() => set(!open)}>{open ? "▼" : "▶"}</button>
+                <button
+                  onClick={() => set(!open)}
+                  className="text-black transition-transform"
+                >
+                  <svg
+                    className={`w-4 h-4 ${open ? "rotate-90" : "rotate-0"}`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4l8 6-8 6z" />
+                  </svg>
+                </button>
               </div>
 
               {open &&
-                MATCH_DATA.matches[k].map((m, i) => (
-                  <div key={i} className="flex justify-between border p-3 mb-2">
-                    <span>
-                      {m.teams[0]} vs {m.teams[1]}
-                    </span>
-                    <button
-                      disabled={!hasAnyResult(m)}
-                      onClick={() => setSelectedMatch(m)}
-                      className={`px-4 py-1 rounded ${
-                        hasAnyResult(m)
-                          ? "bg-gray-600 text-white"
-                          : "bg-gray-200 text-gray-400"
-                      }`}
+                MATCH_DATA.matches[k].map((m, i) => {
+                  const { eventsA, eventsB, pointsA, pointsB } =
+                    getMatchSummary(m);
+                  const outcome = getMatchOutcome(m);
+                  const winner = outcome?.winner;
+
+                  const teamA = m.teams[0];
+                  const teamB = m.teams[1];
+
+                  return (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center border rounded-lg p-4 mb-3"
                     >
-                      View Result
-                    </button>
-                  </div>
-                ))}
+                      {/* LEFT: Teams */}
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium">
+                          <span className="text-sm">
+                            <span
+                              className={
+                                outcome.winner === teamA
+                                  ? "text-green-600 font-semibold"
+                                  : "text-gray-900"
+                              }
+                            >
+                              {teamA}
+                            </span>{" "}
+                            <span className="text-blue-600 font-semibold">
+                              vs
+                            </span>{" "}
+                            <span
+                              className={
+                                outcome.winner === teamB
+                                  ? "text-green-600 font-semibold"
+                                  : "text-gray-900"
+                              }
+                            >
+                              {teamB}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* CENTER: Results */}
+                      <div className="text-sm text-gray-700 text-right mr-6">
+                        <div>
+                          <span className="font-semibold">Matches:</span>{" "}
+                          <span
+                            className={
+                              eventsA !== eventsB && outcome.winner === teamA
+                                ? "text-green-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {eventsA}
+                          </span>{" "}
+                          -{" "}
+                          <span
+                            className={
+                              eventsA !== eventsB && outcome.winner === teamB
+                                ? "text-green-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {eventsB}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="font-semibold">Points:</span>{" "}
+                          <span
+                            className={
+                              outcome.winner === teamA
+                                ? "text-green-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {pointsA}
+                          </span>{" "}
+                          -{" "}
+                          <span
+                            className={
+                              outcome.winner === teamB
+                                ? "text-green-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {pointsB}
+                          </span>
+                        </div>
+
+                        {/* ✅ TB DISPLAY */}
+                        {outcome.reason === "TieBreaker" &&
+                          tbA !== null &&
+                          tbB !== null && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Tie Break:{" "}
+                              <span
+                                className={
+                                  outcome.winner === teamA
+                                    ? "text-green-600 font-semibold"
+                                    : ""
+                                }
+                              >
+                                {tbA}
+                              </span>{" "}
+                              -{" "}
+                              <span
+                                className={
+                                  outcome.winner === teamB
+                                    ? "text-green-600 font-semibold"
+                                    : ""
+                                }
+                              >
+                                {tbB}
+                              </span>
+                            </div>
+                          )}
+                      </div>
+
+                      {/* RIGHT: Action */}
+                      <button
+                        disabled={!hasAnyResult(m)}
+                        onClick={() => setSelectedMatch(m)}
+                        className={`px-4 py-1 rounded ${
+                          hasAnyResult(m)
+                            ? "bg-gray-600 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                      >
+                        View
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
           ))}
 
